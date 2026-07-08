@@ -650,10 +650,12 @@
   <header>
     <div>
       <h1>Device Mockup Studio</h1>
-      <p>Click a device to add it, then drag images from your computer onto a mockup.</p>
+      <p>Click a device to add it, then Import or drop an image onto a mockup.</p>
     </div>
     <div class="header-actions">
+      <button type="button" id="importImage">Import</button>
       <button type="button" id="clearCanvas">Clear canvas</button>
+      <input type="file" id="importImageInput" accept="image/*,.svg" hidden />
       <label class="speed-field" title="How long the showcase scroll takes">
         <span>Slow</span>
         <input type="range" id="showcaseSpeed" min="6" max="30" step="1" value="14" />
@@ -2147,6 +2149,40 @@
       } else {
         showToast('Drop the image onto a mockup');
       }
+    });
+
+    function getImportTargetScreen() {
+      const mockups = getSortedMockups();
+      if (!mockups.length) return null;
+      // Prefer an empty screen; otherwise the front-most mockup
+      const empty = [...mockups].reverse().find((el) => {
+        const screen = el.querySelector('.screen');
+        return screen && !getContentImage(el);
+      });
+      if (empty) return empty.querySelector('.screen');
+      return mockups[mockups.length - 1].querySelector('.screen');
+    }
+
+    const importImageInput = document.getElementById('importImageInput');
+    document.getElementById('importImage').addEventListener('click', () => {
+      if (!getSortedMockups().length) {
+        showToast('Add a device first');
+        return;
+      }
+      importImageInput.click();
+    });
+
+    importImageInput.addEventListener('change', () => {
+      const file = importImageInput.files && importImageInput.files[0];
+      importImageInput.value = '';
+      if (!file) return;
+      const target = getImportTargetScreen();
+      if (!target) {
+        showToast('Add a device first');
+        return;
+      }
+      loadImageIntoScreen(file, target);
+      showToast('Image added to mockup');
     });
 
     document.getElementById('clearCanvas').addEventListener('click', () => {
