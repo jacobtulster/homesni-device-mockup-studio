@@ -1,0 +1,3101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomesNI Device Mockup Studio</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #1a1d27;
+      --panel-border: #2a2f3d;
+      --text: #f0f2f8;
+      --muted: #9aa3b5;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --danger: #ef4444;
+      --canvas: #12151c;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: var(--panel);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 0.15rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--panel-border);
+      background: #252936;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.45rem 0.8rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    button:hover { background: #2f3444; }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    button.primary:hover { background: var(--accent-hover); }
+
+    .export-menu {
+      position: relative;
+    }
+
+    .export-menu.open .export-dropdown {
+      display: block;
+    }
+
+    .export-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      min-width: 160px;
+      background: #252936;
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 0.35rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      z-index: 10001;
+    }
+
+    .export-dropdown button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      padding: 0.55rem 0.7rem;
+    }
+
+    .export-dropdown button:hover {
+      background: #2f3444;
+    }
+
+    .export-dropdown .export-divider {
+      height: 1px;
+      background: var(--panel-border);
+      margin: 0.35rem 0.25rem;
+    }
+
+    .export-dropdown .toggle-field {
+      width: 100%;
+      justify-content: space-between;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      padding: 0.45rem 0.7rem;
+      margin: 0;
+    }
+
+    .export-dropdown .toggle-field:hover {
+      background: #2f3444;
+    }
+
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      user-select: none;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .toggle-field > span:first-child {
+      color: var(--text);
+    }
+
+    .switch {
+      position: relative;
+      width: 38px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch .slider {
+      position: absolute;
+      inset: 0;
+      background: #3a4154;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .switch .slider::before {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #f0f2f8;
+      border-radius: 50%;
+      transition: transform 0.15s;
+    }
+
+    .switch input:checked + .slider {
+      background: var(--accent);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(16px);
+    }
+
+    .speed-field {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.2rem 0.55rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      background: #252936;
+      font-size: 0.78rem;
+      color: var(--muted);
+      user-select: none;
+    }
+
+    .speed-field strong {
+      color: var(--text);
+      font-weight: 600;
+      min-width: 2.4rem;
+      text-align: right;
+    }
+
+    .speed-field input[type="range"] {
+      width: 110px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: calc(100vh - 62px);
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--panel-border);
+      background: var(--panel);
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      margin: 0 0 0.35rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .sidebar .hint {
+      margin: 0 0 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .device-palette {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .palette-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.65rem 0.7rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      background: #222633;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.15s, transform 0.15s, background 0.15s;
+    }
+
+    .palette-item:hover {
+      border-color: var(--accent);
+      background: #2a3144;
+      transform: translateY(-1px);
+    }
+
+    .palette-item:active { transform: translateY(0); }
+
+    .palette-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #2d3344;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .palette-label {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08), transparent 35%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.06), transparent 35%),
+        var(--canvas);
+    }
+
+    .canvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .canvas-inner {
+      position: relative;
+      min-width: 100%;
+      min-height: 100%;
+      width: max(100%, 1600px);
+      height: max(100%, 1000px);
+    }
+
+    .canvas-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .canvas-empty strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+      font-size: 1rem;
+    }
+
+    .canvas.drag-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: -6px;
+    }
+
+    .mockup {
+      position: absolute;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .mockup.dragging {
+      cursor: grabbing;
+      z-index: 1000;
+      opacity: 0.95;
+    }
+
+    .mockup-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+      padding: 0.2rem 0.15rem;
+      cursor: grab;
+      position: relative;
+      z-index: 30;
+      background: rgba(18, 21, 28, 0.92);
+      border-radius: 8px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .mockup.dragging .mockup-toolbar {
+      cursor: grabbing;
+    }
+
+    .mockup-title {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      padding-left: 0.25rem;
+    }
+
+    .mockup-actions {
+      display: flex;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      line-height: 1;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .icon-btn.danger {
+      color: #fecaca;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .icon-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .device-stage {
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .device-frame {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      user-select: none;
+      overflow: hidden;
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    .resize-handle {
+      position: absolute;
+      z-index: 28;
+      width: 16px;
+      height: 16px;
+      opacity: 0;
+      transition: opacity 0.12s;
+      pointer-events: auto;
+      background: transparent;
+      box-sizing: border-box;
+    }
+
+    .mockup:hover .resize-handle,
+    .mockup.resizing .resize-handle {
+      opacity: 1;
+    }
+
+    /* Corner bracket shapes: ┌ ┐ └ ┘ */
+    .resize-handle.nw {
+      top: -2px;
+      left: -2px;
+      border-top: 3px solid #3b82f6;
+      border-left: 3px solid #3b82f6;
+      border-radius: 2px 0 0 0;
+      cursor: nwse-resize;
+    }
+
+    .resize-handle.ne {
+      top: -2px;
+      right: -2px;
+      border-top: 3px solid #3b82f6;
+      border-right: 3px solid #3b82f6;
+      border-radius: 0 2px 0 0;
+      cursor: nesw-resize;
+    }
+
+    .resize-handle.sw {
+      bottom: -2px;
+      left: -2px;
+      border-bottom: 3px solid #3b82f6;
+      border-left: 3px solid #3b82f6;
+      border-radius: 0 0 0 2px;
+      cursor: nesw-resize;
+    }
+
+    .resize-handle.se {
+      bottom: -2px;
+      right: -2px;
+      border-bottom: 3px solid #3b82f6;
+      border-right: 3px solid #3b82f6;
+      border-radius: 0 0 2px 0;
+      cursor: nwse-resize;
+    }
+
+    .mockup.resizing {
+      z-index: 1000;
+    }
+
+    .rotate-handle {
+      position: absolute;
+      left: 50%;
+      bottom: -30px;
+      width: 22px;
+      height: 22px;
+      margin-left: -11px;
+      border-radius: 50%;
+      border: 1px solid var(--panel-border);
+      background: #252936;
+      color: var(--text);
+      cursor: grab;
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      z-index: 25;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      user-select: none;
+    }
+
+    .rotate-handle:hover {
+      border-color: var(--accent);
+      background: #2f3444;
+    }
+
+    .rotate-handle:active,
+    .mockup.rotating .rotate-handle {
+      cursor: grabbing;
+    }
+
+    .mockup.rotating {
+      z-index: 1000;
+    }
+
+    .rotation-badge {
+      position: absolute;
+      left: 50%;
+      bottom: -50px;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      color: #ff8cc8;
+      background: rgba(26, 29, 39, 0.9);
+      border: 1px solid rgba(255, 45, 149, 0.35);
+      border-radius: 6px;
+      padding: 0.15rem 0.4rem;
+      pointer-events: none;
+      display: none;
+      z-index: 25;
+      white-space: nowrap;
+    }
+
+    .mockup.rotating .rotation-badge {
+      display: block;
+    }
+
+    .device-art {
+      display: block;
+      max-width: none;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: grayscale(1) contrast(1.08) brightness(0.98) drop-shadow(var(--shadow));
+    }
+
+    .screen {
+      position: absolute;
+      overflow: hidden;
+      background: #000;
+      cursor: ns-resize;
+      z-index: 2;
+      isolation: isolate;
+      transform: translateZ(0);
+    }
+
+    .screen.empty {
+      background: linear-gradient(145deg, #1a1d27, #0d0f14);
+      cursor: copy;
+    }
+
+    .screen.empty::after {
+      content: "Drop image here";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #6b7280;
+      font-size: 0.72rem;
+      pointer-events: none;
+    }
+
+    .screen.drag-over {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .guides-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      overflow: hidden;
+    }
+
+    .smart-guide {
+      position: absolute;
+      background: #ff2d95;
+      box-shadow: 0 0 0 1px rgba(255, 45, 149, 0.25);
+    }
+
+    .smart-guide.v {
+      top: 0;
+      bottom: 0;
+      width: 1px;
+    }
+
+    .smart-guide.h {
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
+
+    .screen img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      max-width: none;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      image-rendering: auto;
+      image-rendering: high-quality;
+      -ms-interpolation-mode: bicubic;
+      backface-visibility: hidden;
+    }
+
+    .screen img.is-svg {
+      /* Vectors stay crisp when the browser can use the SVG source */
+      image-rendering: auto;
+    }
+
+    .screen.panning { cursor: ns-resize; }
+
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: #252936;
+      border: 1px solid var(--panel-border);
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      transition: transform 0.25s;
+      z-index: 10000;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .sidebar { border-right: none; border-bottom: 1px solid var(--panel-border); }
+      .device-palette { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Device Mockup Studio</h1>
+      <p>Click a device to add it, then drag images from your computer onto a mockup.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="clearCanvas">Clear canvas</button>
+      <label class="speed-field" title="How long the showcase scroll takes">
+        <span>Slow</span>
+        <input type="range" id="showcaseSpeed" min="6" max="30" step="1" value="14" />
+        <span>Fast</span>
+        <strong id="showcaseSpeedLabel">22s</strong>
+      </label>
+      <button type="button" id="playShowcase">Play Showcase</button>
+      <div class="export-menu" id="exportMenu">
+        <button type="button" class="primary" id="exportToggle" aria-haspopup="true" aria-expanded="false">
+          Export ▾
+        </button>
+        <div class="export-dropdown" id="exportDropdown" role="menu">
+          <button type="button" data-export="png" role="menuitem">PNG</button>
+          <button type="button" data-export="jpeg" role="menuitem">JPEG</button>
+          <button type="button" data-export="svg" role="menuitem">SVG</button>
+          <div class="export-divider"></div>
+          <button type="button" data-export="gif" role="menuitem">GIF (Showcase)</button>
+          <button type="button" data-export="mp4" role="menuitem">MP4 (Showcase)</button>
+          <div class="export-divider"></div>
+          <label class="toggle-field" title="Include soft drop shadows in exports">
+            <span>Shadows</span>
+            <span class="switch">
+              <input type="checkbox" id="exportShadows" />
+              <span class="slider"></span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Devices</h2>
+      <p class="hint">Click a device to place it. Drop images onto mockups. Use Play Showcase to preview a smooth top→bottom scroll. Export as GIF or MP4 for the animation. Drag corner brackets to shrink/grow.</p>
+      <div class="device-palette" id="palette"></div>
+    </aside>
+
+    <div class="canvas-wrap">
+      <div class="canvas" id="canvas">
+        <div class="canvas-inner" id="canvasInner">
+          <div class="guides-layer" id="guidesLayer"></div>
+          <div class="canvas-empty" id="canvasEmpty">
+            <div>
+              <strong>Your canvas is empty</strong>
+              Click an iMac, iPad, MacBook Pro, or iPhone on the left to add it
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="gif.js"></script>
+  <script>
+    const DEVICES = {
+      imac: {
+        label: 'iMac',
+        icon: '🖥️',
+        svgFile: 'IMac_vector.svg',
+        nativeWidth: 1880.5699,
+        nativeHeight: 1554.7,
+        displayWidth: 520,
+        screen: { x: 79.13208, y: 74.380978, w: 1721.7344, h: 969.08185 }
+      },
+      macbook: {
+        label: 'MacBook Pro',
+        icon: '💻',
+        width: 520,
+        height: 310,
+        screen: { left: 52, top: 22, width: 416, height: 260, radius: 4 },
+        svg: `
+          <svg viewBox="0 0 520 310" width="520" height="310" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="mbpLid" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2e2e32"/>
+                <stop offset="100%" stop-color="#1c1c20"/>
+              </linearGradient>
+              <linearGradient id="mbpBase" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3a3a40"/>
+                <stop offset="100%" stop-color="#2a2a2e"/>
+              </linearGradient>
+            </defs>
+            <!-- Lid / display chassis -->
+            <rect x="28" y="8" width="464" height="288" rx="14" fill="url(#mbpLid)" stroke="#44444a" stroke-width="2"/>
+            <!-- Inner bezel -->
+            <rect x="44" y="16" width="432" height="272" rx="6" fill="#151518"/>
+            <!-- Screen area (matches screen coords) -->
+            <rect x="52" y="22" width="416" height="260" rx="4" fill="#111"/>
+            <!-- Camera -->
+            <circle cx="260" cy="12" r="2.5" fill="#333"/>
+            <!-- Hinge / lip -->
+            <rect x="18" y="296" width="484" height="8" rx="2" fill="url(#mbpBase)" stroke="#4a4a50" stroke-width="1"/>
+            <!-- Front edge -->
+            <rect x="12" y="302" width="496" height="6" rx="2" fill="#323238"/>
+          </svg>`
+      },
+      ipad: {
+        label: 'iPad',
+        icon: '📱',
+        width: 320,
+        height: 440,
+        screen: { left: 18, top: 18, width: 284, height: 404, radius: 20 },
+        svg: `
+          <svg viewBox="0 0 320 440" width="320" height="440" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="ipadBody" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2a2a2e"/>
+                <stop offset="100%" stop-color="#1a1a1e"/>
+              </linearGradient>
+            </defs>
+            <rect x="6" y="6" width="308" height="428" rx="28" fill="url(#ipadBody)" stroke="#3a3a40" stroke-width="2"/>
+            <rect x="18" y="18" width="284" height="404" rx="20" fill="#111"/>
+            <circle cx="160" cy="28" r="4" fill="#333"/>
+          </svg>`
+      },
+      iphone: {
+        label: 'iPhone',
+        icon: '📲',
+        svgFile: 'IPhone_17_Vector.svg',
+        nativeWidth: 72.499999,
+        nativeHeight: 150,
+        displayWidth: 220,
+        // Display area from the inner #333 screen path (rect32-2)
+        screen: { x: 2.912484, y: 2.464891, w: 66.675518, h: 145.070219, r: 10.4004 }
+      }
+    };
+
+    const palette = document.getElementById('palette');
+    const canvas = document.getElementById('canvas');
+    const canvasInner = document.getElementById('canvasInner');
+    const canvasEmpty = document.getElementById('canvasEmpty');
+    const guidesLayer = document.getElementById('guidesLayer');
+    const toast = document.getElementById('toast');
+    const SNAP_THRESHOLD = 6;
+
+    let mockupId = 0;
+    let layerCounter = 10;
+    const svgDataUrlCache = {};
+
+    async function getSvgDataUrl(path, pixelWidth, pixelHeight) {
+      const cacheKey = pixelWidth && pixelHeight
+        ? `${path}@${Math.round(pixelWidth)}x${Math.round(pixelHeight)}`
+        : path;
+      if (svgDataUrlCache[cacheKey]) return svgDataUrlCache[cacheKey];
+
+      let text;
+      if (svgDataUrlCache[path + '::raw']) {
+        text = svgDataUrlCache[path + '::raw'];
+      } else {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error('Failed to load ' + path);
+        text = await res.text();
+        svgDataUrlCache[path + '::raw'] = text;
+      }
+
+      if (pixelWidth && pixelHeight) {
+        // Force the vector to rasterize at exact export pixels (not a tiny default bitmap)
+        text = text.replace(
+          /<svg\b([^>]*)>/i,
+          (match, attrs) => {
+            let next = attrs
+              .replace(/\swidth\s*=\s*"[^"]*"/i, '')
+              .replace(/\sheight\s*=\s*"[^"]*"/i, '');
+            // Preserve viewBox if missing — derive from original width/height when possible
+            if (!/\sviewBox\s*=/i.test(next)) {
+              const wMatch = attrs.match(/\swidth\s*=\s*"([\d.]+)"/i);
+              const hMatch = attrs.match(/\sheight\s*=\s*"([\d.]+)"/i);
+              if (wMatch && hMatch) {
+                next += ` viewBox="0 0 ${wMatch[1]} ${hMatch[1]}"`;
+              }
+            }
+            next += ` width="${Math.round(pixelWidth)}" height="${Math.round(pixelHeight)}"`;
+            return `<svg${next}>`;
+          }
+        );
+      }
+
+      const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text);
+      svgDataUrlCache[cacheKey] = dataUrl;
+      return dataUrl;
+    }
+
+    function waitForImage(img) {
+      if (img.complete && img.naturalWidth) return Promise.resolve(img);
+      return new Promise((resolve, reject) => {
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+      });
+    }
+
+    async function rasterizeDeviceArt(artEl, width, height, deviceType, pixelScale = 2) {
+      // Rasterize vectors at exact export pixel size (or higher) — never soft-upsample later
+      const scale = Math.max(2, pixelScale);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.ceil(width * scale));
+      canvas.height = Math.max(1, Math.ceil(height * scale));
+      const ctx = canvas.getContext('2d');
+      // Nearest/high quality off for crisp chrome edges when drawing 1:1 vectors
+      ctx.imageSmoothingEnabled = false;
+      ctx.filter = 'grayscale(1) contrast(1.12) brightness(0.98)';
+
+      if (artEl.tagName === 'IMG') {
+        // Draw with same crop offsets as the live art element
+        const marginLeft = parseFloat(artEl.style.marginLeft) || 0;
+        const marginTop = parseFloat(artEl.style.marginTop) || 0;
+        const artW = parseFloat(artEl.style.width) || width;
+        const artH = parseFloat(artEl.style.height) || height;
+        // Rasterize the full SVG art at export pixels (crop is applied via margins)
+        const targetW = Math.round(artW * scale);
+        const targetH = Math.round(artH * scale);
+
+        let src = artEl.src || '';
+        if (deviceType && DEVICES[deviceType]?.svgFile) {
+          src = await getSvgDataUrl(DEVICES[deviceType].svgFile, targetW, targetH);
+        } else if (!src.startsWith('data:')) {
+          await waitForImage(artEl);
+          src = artEl.src;
+        }
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = src;
+        });
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(
+          img,
+          Math.round(marginLeft * scale),
+          Math.round(marginTop * scale),
+          targetW,
+          targetH
+        );
+      } else {
+        // Force the inline SVG to declare exact pixel size so the browser
+        // rasterizes vectors at export resolution instead of a tiny default.
+        let root = artEl.cloneNode(true);
+        if (root.tagName && root.tagName.toLowerCase() !== 'svg') {
+          root = artEl.querySelector('svg') || artEl;
+          root = root.cloneNode(true);
+        }
+        root.setAttribute('width', String(Math.round(width * scale)));
+        root.setAttribute('height', String(Math.round(height * scale)));
+        const xml = new XMLSerializer().serializeToString(root);
+        const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = dataUrl;
+        });
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
+
+      return canvas.toDataURL('image/png');
+    }
+
+    function getDeviceLayout(device) {
+      if (device.svg && !device.svgFile) {
+        return {
+          width: device.width,
+          height: device.height,
+          screen: {
+            left: device.screen.left,
+            top: device.screen.top,
+            width: device.screen.width,
+            height: device.screen.height,
+            radius: device.screen.radius || 0
+          }
+        };
+      }
+
+      const crop = device.crop || { x: 0, y: 0, w: device.nativeWidth, h: device.nativeHeight };
+      const scale = device.displayWidth / crop.w;
+      const width = device.displayWidth;
+      const height = crop.h * scale;
+      const screen = device.screen;
+
+      return {
+        width,
+        height,
+        scale,
+        crop,
+        screen: {
+          left: ((screen.x - crop.x) / crop.w) * width,
+          top: ((screen.y - crop.y) / crop.h) * height,
+          width: (screen.w / crop.w) * width,
+          height: (screen.h / crop.h) * height,
+          radius: screen.r != null ? (screen.r / crop.w) * width : 0
+        },
+        art: {
+          width: device.nativeWidth * scale,
+          height: device.nativeHeight * scale,
+          marginLeft: -crop.x * scale,
+          marginTop: -crop.y * scale
+        }
+      };
+    }
+
+    function createDeviceArt(device) {
+      if (device.svg && !device.svgFile) {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = device.svg.trim();
+        const svg = wrap.firstElementChild;
+        if (svg) svg.classList.add('device-art');
+        return svg || wrap;
+      }
+
+      const layout = getDeviceLayout(device);
+      const img = document.createElement('img');
+      img.className = 'device-art';
+      img.alt = device.label;
+      img.draggable = false;
+      img.style.width = layout.art.width + 'px';
+      img.style.height = layout.art.height + 'px';
+      img.style.marginLeft = layout.art.marginLeft + 'px';
+      img.style.marginTop = layout.art.marginTop + 'px';
+
+      // Prefer cached data URL so exports/canvas capture aren't blocked by file URLs
+      if (svgDataUrlCache[device.svgFile]) {
+        img.src = svgDataUrlCache[device.svgFile];
+      } else {
+        img.src = device.svgFile;
+        getSvgDataUrl(device.svgFile).then((dataUrl) => {
+          if (img.isConnected) img.src = dataUrl;
+        }).catch(() => {});
+      }
+      return img;
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function updateEmptyState() {
+      const hasMockups = canvasInner.querySelector('.mockup');
+      canvasEmpty.style.display = hasMockups ? 'none' : 'grid';
+    }
+
+    function createPalette() {
+      Object.entries(DEVICES).forEach(([type, device]) => {
+        const item = document.createElement('div');
+        item.className = 'palette-item';
+        item.dataset.deviceType = type;
+        item.innerHTML = `
+          <div class="palette-icon">${device.icon}</div>
+          <div class="palette-label">${device.label}</div>
+        `;
+        item.addEventListener('click', () => placeDevice(type));
+        palette.appendChild(item);
+      });
+    }
+
+    function nextPlacement(type) {
+      const layout = getDeviceLayout(DEVICES[type]);
+      const existing = canvasInner.querySelectorAll('.mockup').length;
+      const col = existing % 2;
+      const row = Math.floor(existing / 2);
+      return {
+        x: 60 + col * (layout.width + 80),
+        y: 50 + row * (layout.height + 90)
+      };
+    }
+
+    function placeDevice(type) {
+      const pos = nextPlacement(type);
+      addMockup(type, pos.x, pos.y);
+    }
+
+    function findDropTargetScreen(clientX, clientY) {
+      const screens = [...canvasInner.querySelectorAll('.mockup .screen')];
+      let best = null;
+      let bestDist = Infinity;
+
+      for (const screen of screens) {
+        const rect = screen.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const inside =
+          clientX >= rect.left && clientX <= rect.right &&
+          clientY >= rect.top && clientY <= rect.bottom;
+
+        if (inside) return screen;
+
+        const dist = Math.hypot(clientX - cx, clientY - cy);
+        const mockup = screen.closest('.mockup');
+        const mockRect = mockup.getBoundingClientRect();
+        const overMockup =
+          clientX >= mockRect.left && clientX <= mockRect.right &&
+          clientY >= mockRect.top && clientY <= mockRect.bottom;
+
+        if (overMockup && dist < bestDist) {
+          best = screen;
+          bestDist = dist;
+        }
+      }
+
+      return best;
+    }
+
+    function clearScreenHighlights() {
+      canvasInner.querySelectorAll('.screen.drag-over').forEach((el) => {
+        el.classList.remove('drag-over');
+      });
+    }
+
+    function addMockup(type, x, y) {
+      const device = DEVICES[type];
+      const layout = getDeviceLayout(device);
+      const id = ++mockupId;
+      const el = document.createElement('div');
+      el.className = 'mockup';
+      el.dataset.id = id;
+      el.dataset.type = type;
+      el.style.left = Math.max(20, x) + 'px';
+      el.style.top = Math.max(20, y) + 'px';
+      el.style.width = layout.width + 'px';
+      el.dataset.originX = String(Math.max(20, x));
+      el.dataset.originY = String(Math.max(20, y));
+
+      const screen = document.createElement('div');
+      screen.className = 'screen empty';
+      const s = layout.screen;
+      screen.style.left = s.left + 'px';
+      screen.style.top = s.top + 'px';
+      screen.style.width = s.width + 'px';
+      screen.style.height = s.height + 'px';
+      if (s.radius) screen.style.borderRadius = s.radius + 'px';
+
+      el.innerHTML = `
+        <div class="mockup-toolbar">
+          <span class="mockup-title">${device.label}</span>
+          <div class="mockup-actions">
+            <button type="button" class="icon-btn" data-action="to-front" title="Bring to front">⬆</button>
+            <button type="button" class="icon-btn" data-action="forward" title="Bring forward">▲</button>
+            <button type="button" class="icon-btn" data-action="backward" title="Send backward">▼</button>
+            <button type="button" class="icon-btn" data-action="to-back" title="Send to back">⬇</button>
+            <button type="button" class="icon-btn" data-action="rotate-ccw" title="Rotate left 90°">↶</button>
+            <button type="button" class="icon-btn" data-action="rotate-cw" title="Rotate right 90°">↷</button>
+            <button type="button" class="icon-btn" data-action="reset-image" title="Reset image framing">↺</button>
+            <button type="button" class="icon-btn" data-action="reset-position" title="Reset device position & rotation">⌖</button>
+            <button type="button" class="icon-btn danger" data-action="remove" title="Remove mockup">✕</button>
+          </div>
+        </div>
+      `;
+      el.style.zIndex = String(++layerCounter);
+      el.dataset.rotation = '0';
+      el.dataset.scale = '1';
+      el.dataset.baseFrameW = String(layout.width);
+      el.dataset.baseFrameH = String(layout.height);
+      el.dataset.frameW = String(layout.width);
+      el.dataset.frameH = String(layout.height);
+
+      const stage = document.createElement('div');
+      stage.className = 'device-stage';
+      stage.style.width = layout.width + 'px';
+      stage.style.height = layout.height + 'px';
+
+      const frame = document.createElement('div');
+      frame.className = 'device-frame';
+      frame.style.width = layout.width + 'px';
+      frame.style.height = layout.height + 'px';
+      const art = createDeviceArt(device);
+      frame.appendChild(art);
+      frame.appendChild(screen);
+      stage.appendChild(frame);
+
+      ['nw', 'ne', 'sw', 'se'].forEach((corner) => {
+        const handle = document.createElement('div');
+        handle.className = 'resize-handle ' + corner;
+        handle.dataset.edge = corner;
+        handle.title = 'Drag to resize';
+        stage.appendChild(handle);
+      });
+
+      const rotateHandle = document.createElement('button');
+      rotateHandle.type = 'button';
+      rotateHandle.className = 'rotate-handle';
+      rotateHandle.title = 'Drag to rotate';
+      rotateHandle.textContent = '⟳';
+      rotateHandle.setAttribute('aria-label', 'Rotate');
+
+      const rotationBadge = document.createElement('div');
+      rotationBadge.className = 'rotation-badge';
+      rotationBadge.textContent = '0°';
+
+      el.appendChild(stage);
+      el.appendChild(rotateHandle);
+      el.appendChild(rotationBadge);
+      canvasInner.appendChild(el);
+
+      // Place frame centered in stage before first paint
+      frame.style.left = '50%';
+      frame.style.top = '50%';
+      frame.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+
+      // Store base layout for proportional resize
+      el.dataset.baseScreen = JSON.stringify({
+        left: s.left,
+        top: s.top,
+        width: s.width,
+        height: s.height,
+        radius: s.radius || 0
+      });
+      const artEl = frame.querySelector('.device-art');
+      if (artEl && artEl.tagName === 'IMG') {
+        el.dataset.baseArt = JSON.stringify({
+          width: parseFloat(artEl.style.width) || layout.art?.width || layout.width,
+          height: parseFloat(artEl.style.height) || layout.art?.height || layout.height,
+          marginLeft: parseFloat(artEl.style.marginLeft) || layout.art?.marginLeft || 0,
+          marginTop: parseFloat(artEl.style.marginTop) || layout.art?.marginTop || 0
+        });
+      } else {
+        el.dataset.baseArt = JSON.stringify({ inline: true, width: layout.width, height: layout.height });
+      }
+
+      setupMockupInteractions(el, screen, frame, stage, rotateHandle, rotationBadge);
+      updateEmptyState();
+      showToast(`${device.label} added`);
+      return el;
+    }
+
+    function setupMockupInteractions(mockupEl, screenEl, frameEl, stageEl, rotateHandle, rotationBadge) {
+      const toolbar = mockupEl.querySelector('.mockup-toolbar');
+      const baseFrameW = parseFloat(mockupEl.dataset.baseFrameW);
+      const baseFrameH = parseFloat(mockupEl.dataset.baseFrameH);
+      const MIN_SCALE = 0.35;
+      const MAX_SCALE = 2.5;
+
+      function applyRotation(deg, snap = false) {
+        let angle = ((deg % 360) + 360) % 360;
+        if (snap) {
+          const snaps = [0, 45, 90, 135, 180, 225, 270, 315, 360];
+          for (const s of snaps) {
+            if (Math.abs(angle - s) <= 4 || Math.abs(angle - s + 360) <= 4 || Math.abs(angle - s - 360) <= 4) {
+              angle = s === 360 ? 0 : s;
+              break;
+            }
+          }
+        }
+        if (angle === 360) angle = 0;
+
+        const frameW = parseFloat(mockupEl.dataset.frameW);
+        const frameH = parseFloat(mockupEl.dataset.frameH);
+        const rad = angle * Math.PI / 180;
+        const cos = Math.abs(Math.cos(rad));
+        const sin = Math.abs(Math.sin(rad));
+        const stageW = frameW * cos + frameH * sin;
+        const stageH = frameW * sin + frameH * cos;
+
+        stageEl.style.width = stageW + 'px';
+        stageEl.style.height = stageH + 'px';
+        mockupEl.style.width = Math.max(stageW, toolbar.offsetWidth || stageW) + 'px';
+
+        mockupEl.dataset.rotation = String(angle);
+        frameEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+        rotationBadge.textContent = `${Math.round(angle)}°`;
+        return angle;
+      }
+
+      function applyDeviceScale(scale) {
+        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+
+        // Preserve image framing relative to the screen before size changes
+        const contentImg = [...screenEl.querySelectorAll('img')].find((img) => !img.classList.contains('device-art'));
+        let frameRatio = null;
+        if (contentImg) {
+          const before = getImageMetrics(contentImg, screenEl);
+          if (before && before.maxOy > before.minOy) {
+            const oy = parseFloat(contentImg.dataset.offsetY || 0);
+            // 0 = top of image, 1 = bottom of image
+            frameRatio = (before.maxOy - oy) / (before.maxOy - before.minOy);
+          } else if (contentImg) {
+            frameRatio = 0;
+          }
+        }
+
+        mockupEl.dataset.scale = String(scale);
+
+        const frameW = baseFrameW * scale;
+        const frameH = baseFrameH * scale;
+        mockupEl.dataset.frameW = String(frameW);
+        mockupEl.dataset.frameH = String(frameH);
+        frameEl.style.width = frameW + 'px';
+        frameEl.style.height = frameH + 'px';
+
+        const baseScreen = JSON.parse(mockupEl.dataset.baseScreen || '{}');
+        screenEl.style.left = (baseScreen.left * scale) + 'px';
+        screenEl.style.top = (baseScreen.top * scale) + 'px';
+        screenEl.style.width = (baseScreen.width * scale) + 'px';
+        screenEl.style.height = (baseScreen.height * scale) + 'px';
+        if (baseScreen.radius) {
+          screenEl.style.borderRadius = (baseScreen.radius * scale) + 'px';
+        }
+
+        const art = frameEl.querySelector('.device-art');
+        const baseArt = JSON.parse(mockupEl.dataset.baseArt || '{}');
+        if (art && art.tagName === 'IMG' && !baseArt.inline) {
+          art.style.width = (baseArt.width * scale) + 'px';
+          art.style.height = (baseArt.height * scale) + 'px';
+          art.style.marginLeft = (baseArt.marginLeft * scale) + 'px';
+          art.style.marginTop = (baseArt.marginTop * scale) + 'px';
+        } else if (art && (art.tagName === 'svg' || art.tagName === 'SVG')) {
+          art.setAttribute('width', String(frameW));
+          art.setAttribute('height', String(frameH));
+          art.style.width = frameW + 'px';
+          art.style.height = frameH + 'px';
+        }
+
+        applyRotation(parseFloat(mockupEl.dataset.rotation || 0));
+
+        if (contentImg) {
+          if (frameRatio != null) {
+            // Temporarily apply transform so metrics use the new screen size
+            applyImageTransform(contentImg, screenEl);
+            const after = getImageMetrics(contentImg, screenEl);
+            if (after && after.maxOy > after.minOy) {
+              contentImg.dataset.offsetY = String(after.maxOy - frameRatio * (after.maxOy - after.minOy));
+            } else {
+              contentImg.dataset.offsetY = '0';
+            }
+          }
+          applyImageTransform(contentImg, screenEl);
+          if (contentImg.dataset.isSvg === '1') {
+            refreshSvgContent(contentImg, screenEl);
+          }
+        }
+        return scale;
+      }
+
+      mockupEl.querySelector('[data-action="remove"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        mockupEl.remove();
+        updateEmptyState();
+      });
+
+      mockupEl.querySelector('[data-action="reset-image"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const img = screenEl.querySelector('img');
+        if (img) {
+          snapImageToTop(img, screenEl);
+          if (img.dataset.isSvg === '1') refreshSvgContent(img, screenEl);
+          showToast('Image framing reset');
+        }
+      });
+
+      mockupEl.querySelector('[data-action="reset-position"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        mockupEl.style.left = (mockupEl.dataset.originX || '20') + 'px';
+        mockupEl.style.top = (mockupEl.dataset.originY || '20') + 'px';
+        applyDeviceScale(1);
+        applyRotation(0);
+        clearAlignmentGuides();
+        showToast('Device position reset');
+      });
+
+      mockupEl.querySelector('[data-action="rotate-cw"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const next = (parseFloat(mockupEl.dataset.rotation || 0) + 90) % 360;
+        applyRotation(next);
+        showToast('Rotated 90°');
+      });
+
+      mockupEl.querySelector('[data-action="rotate-ccw"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const next = (parseFloat(mockupEl.dataset.rotation || 0) - 90 + 360) % 360;
+        applyRotation(next);
+        showToast('Rotated -90°');
+      });
+
+      mockupEl.querySelector('[data-action="to-front"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        bringToFront(mockupEl);
+      });
+      mockupEl.querySelector('[data-action="forward"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        bringForward(mockupEl);
+      });
+      mockupEl.querySelector('[data-action="backward"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        sendBackward(mockupEl);
+      });
+      mockupEl.querySelector('[data-action="to-back"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        sendToBack(mockupEl);
+      });
+
+      toolbar.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('button')) return;
+        beginMockupDrag(mockupEl, e);
+      });
+
+      stageEl.querySelectorAll('.resize-handle').forEach((handle) => {
+        handle.addEventListener('pointerdown', (e) => {
+          if (e.button !== 0) return;
+          e.preventDefault();
+          e.stopPropagation();
+
+          const edge = handle.dataset.edge;
+          const pointerId = e.pointerId;
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startScale = parseFloat(mockupEl.dataset.scale || 1);
+          const startLeft = parseFloat(mockupEl.style.left) || 0;
+          const startTop = parseFloat(mockupEl.style.top) || 0;
+          const startStageW = stageEl.offsetWidth;
+          const startStageH = stageEl.offsetHeight;
+          const startStageOffsetLeft = stageEl.offsetLeft;
+          const startStageOffsetTop = stageEl.offsetTop;
+          const stageAbsLeft = startLeft + startStageOffsetLeft;
+          const stageAbsTop = startTop + startStageOffsetTop;
+          const stageAbsRight = stageAbsLeft + startStageW;
+          const stageAbsBottom = stageAbsTop + startStageH;
+
+          mockupEl.classList.add('resizing');
+
+          const onMove = (ev) => {
+            if (ev.pointerId !== pointerId) return;
+            let nextScale = startScale;
+
+            // Scale from the opposite corner (proportional)
+            let dx = ev.clientX - startX;
+            let dy = ev.clientY - startY;
+            if (edge === 'nw') {
+              nextScale = startScale * Math.max(
+                (startStageW - dx) / startStageW,
+                (startStageH - dy) / startStageH
+              );
+            } else if (edge === 'ne') {
+              nextScale = startScale * Math.max(
+                (startStageW + dx) / startStageW,
+                (startStageH - dy) / startStageH
+              );
+            } else if (edge === 'sw') {
+              nextScale = startScale * Math.max(
+                (startStageW - dx) / startStageW,
+                (startStageH + dy) / startStageH
+              );
+            } else if (edge === 'se') {
+              nextScale = startScale * Math.max(
+                (startStageW + dx) / startStageW,
+                (startStageH + dy) / startStageH
+              );
+            }
+
+            applyDeviceScale(nextScale);
+
+            // Keep the opposite corner anchored in the studio
+            if (edge === 'se') {
+              mockupEl.style.left = (stageAbsLeft - stageEl.offsetLeft) + 'px';
+              mockupEl.style.top = (stageAbsTop - stageEl.offsetTop) + 'px';
+            } else if (edge === 'sw') {
+              mockupEl.style.left = (stageAbsRight - stageEl.offsetWidth - stageEl.offsetLeft) + 'px';
+              mockupEl.style.top = (stageAbsTop - stageEl.offsetTop) + 'px';
+            } else if (edge === 'ne') {
+              mockupEl.style.left = (stageAbsLeft - stageEl.offsetLeft) + 'px';
+              mockupEl.style.top = (stageAbsBottom - stageEl.offsetHeight - stageEl.offsetTop) + 'px';
+            } else if (edge === 'nw') {
+              mockupEl.style.left = (stageAbsRight - stageEl.offsetWidth - stageEl.offsetLeft) + 'px';
+              mockupEl.style.top = (stageAbsBottom - stageEl.offsetHeight - stageEl.offsetTop) + 'px';
+            }
+
+            mockupEl.style.left = Math.max(0, parseFloat(mockupEl.style.left)) + 'px';
+            mockupEl.style.top = Math.max(0, parseFloat(mockupEl.style.top)) + 'px';
+          };
+
+          const onUp = (ev) => {
+            if (ev.pointerId !== pointerId) return;
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.removeEventListener('pointercancel', onUp);
+            mockupEl.classList.remove('resizing');
+          };
+
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+          document.addEventListener('pointercancel', onUp);
+        });
+      });
+
+      rotateHandle.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const pointerId = e.pointerId;
+        const stageRect = stageEl.getBoundingClientRect();
+        const cx = stageRect.left + stageRect.width / 2;
+        const cy = stageRect.top + stageRect.height / 2;
+        const startAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+        const startRotation = parseFloat(mockupEl.dataset.rotation || 0);
+
+        mockupEl.classList.add('rotating');
+
+        const onMove = (ev) => {
+          if (ev.pointerId !== pointerId) return;
+          const currentAngle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * (180 / Math.PI);
+          const next = startRotation + (currentAngle - startAngle);
+          applyRotation(next, true);
+        };
+
+        const onUp = (ev) => {
+          if (ev.pointerId !== pointerId) return;
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
+          mockupEl.classList.remove('rotating');
+          applyRotation(parseFloat(mockupEl.dataset.rotation || 0), true);
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+      });
+
+      let mockupDrag = null;
+      let suppressScreenClick = false;
+
+      function beginMockupDrag(el, e) {
+        if (e.button !== 0) return;
+        if (e.target.closest('.resize-handle')) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const pointerId = e.pointerId;
+        mockupDrag = {
+          startX: e.clientX,
+          startY: e.clientY,
+          origLeft: parseFloat(el.style.left) || 0,
+          origTop: parseFloat(el.style.top) || 0,
+          moved: false
+        };
+
+        el.classList.add('dragging');
+
+        const onMove = (ev) => {
+          if (!mockupDrag || ev.pointerId !== pointerId) return;
+          const dx = ev.clientX - mockupDrag.startX;
+          const dy = ev.clientY - mockupDrag.startY;
+          if (Math.abs(dx) > 2 || Math.abs(dy) > 2) mockupDrag.moved = true;
+
+          let nextLeft = Math.max(0, mockupDrag.origLeft + dx);
+          let nextTop = Math.max(0, mockupDrag.origTop + dy);
+          const snapped = snapMockupPosition(el, nextLeft, nextTop);
+          el.style.left = snapped.left + 'px';
+          el.style.top = snapped.top + 'px';
+          showAlignmentGuides(el, snapped.guides);
+        };
+
+        const onUp = (ev) => {
+          if (ev.pointerId !== pointerId) return;
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
+          el.classList.remove('dragging');
+          clearAlignmentGuides();
+          if (mockupDrag && mockupDrag.moved) {
+            suppressScreenClick = true;
+            setTimeout(() => { suppressScreenClick = false; }, 0);
+          }
+          mockupDrag = null;
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+      }
+
+      mockupEl.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('button')) return;
+        if (e.target.closest('.resize-handle')) return;
+        if (e.target.closest('.screen')) {
+          // Empty screen: drag repositions; filled screen: pan image instead
+          if (screenEl.querySelector('img')) return;
+        }
+        beginMockupDrag(mockupEl, e);
+      });
+
+      screenEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        screenEl.classList.add('drag-over');
+      });
+
+      screenEl.addEventListener('dragleave', () => screenEl.classList.remove('drag-over'));
+
+      screenEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        screenEl.classList.remove('drag-over');
+        const file = [...(e.dataTransfer.files || [])].find(f => f.type.startsWith('image/'));
+        if (file) loadImageIntoScreen(file, screenEl);
+      });
+
+      let pan = null;
+      screenEl.addEventListener('pointerdown', (e) => {
+        const img = screenEl.querySelector('img');
+        if (!img) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const pointerId = e.pointerId;
+        pan = {
+          startY: e.clientY,
+          offsetY: parseFloat(img.dataset.offsetY || 0)
+        };
+        screenEl.classList.add('panning');
+
+        const onMove = (ev) => {
+          if (!pan || ev.pointerId !== pointerId) return;
+          img.dataset.offsetX = '0';
+          img.dataset.offsetY = String(pan.offsetY + (ev.clientY - pan.startY));
+          applyImageTransform(img, screenEl);
+        };
+
+        const onUp = (ev) => {
+          if (ev.pointerId !== pointerId) return;
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
+          screenEl.classList.remove('panning');
+          pan = null;
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
+      });
+
+      screenEl.addEventListener('wheel', (e) => {
+        const img = [...screenEl.querySelectorAll('img')].find((el) => !el.classList.contains('device-art'));
+        if (!img) return;
+        e.preventDefault();
+        const scale = parseFloat(img.dataset.scale || 1);
+        // Never zoom out below cover (1) so empty edges never appear
+        // SVGs can scale further since they're re-rasterized from vector source
+        const maxZoom = img.dataset.isSvg === '1' ? 8 : 3;
+        const next = Math.min(maxZoom, Math.max(1, scale - e.deltaY * 0.001));
+        img.dataset.scale = next;
+        applyImageTransform(img, screenEl);
+        if (img.dataset.isSvg === '1') {
+          clearTimeout(img._svgRefreshT);
+          img._svgRefreshT = setTimeout(() => refreshSvgContent(img, screenEl), 80);
+        }
+      }, { passive: false });
+
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.hidden = true;
+      mockupEl.appendChild(fileInput);
+
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (file) loadImageIntoScreen(file, screenEl);
+        fileInput.value = '';
+      });
+
+      screenEl.addEventListener('click', (e) => {
+        if (screenEl.querySelector('img')) return;
+        if (suppressScreenClick) return;
+        fileInput.click();
+        e.stopPropagation();
+      });
+    }
+
+    function loadImageIntoScreen(file, screenEl) {
+      const isSvg = /\.svg$/i.test(file.name || '') || file.type === 'image/svg+xml';
+
+      if (isSvg) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const text = String(reader.result || '');
+
+          // Full Page Screenshot (and similar) wrap a PNG inside an SVG.
+          // Scaling that wrapper re-rasterizes a downscaled bitmap → blur on zoom.
+          // Prefer the embedded raster at its native capture resolution.
+          const embedded = extractEmbeddedRasterFromSvg(text);
+          if (embedded) {
+            let img = [...screenEl.querySelectorAll('img')].find((el) => !el.classList.contains('device-art'));
+            if (!img) {
+              img = document.createElement('img');
+              screenEl.appendChild(img);
+            }
+            img.classList.remove('is-svg');
+            delete img.dataset.isSvg;
+            delete img.dataset.svgSource;
+            delete img.dataset.logicalW;
+            delete img.dataset.logicalH;
+            delete img.dataset.svgRasterW;
+            delete img.dataset.svgRasterH;
+            img.onload = () => snapImageToTop(img, screenEl);
+            img.src = embedded;
+            screenEl.classList.remove('empty');
+            return;
+          }
+
+          // True vector SVG — keep source and re-rasterize as needed
+          const dims = parseSvgDimensions(text);
+          let img = [...screenEl.querySelectorAll('img')].find((el) => !el.classList.contains('device-art'));
+          if (!img) {
+            img = document.createElement('img');
+            screenEl.appendChild(img);
+          }
+          img.classList.add('is-svg');
+          img.dataset.isSvg = '1';
+          img.dataset.svgSource = text;
+          img.dataset.logicalW = String(dims.w);
+          img.dataset.logicalH = String(dims.h);
+          // Load at native SVG pixel size first (don't downscale on drop)
+          const blobUrl = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }));
+          img.src = blobUrl;
+          await waitForImage(img).catch(() => {});
+          // Prefer browser-reported natural size when the file declares real pixels
+          if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+            img.dataset.logicalW = String(img.naturalWidth);
+            img.dataset.logicalH = String(img.naturalHeight);
+          }
+          snapImageToTop(img, screenEl);
+          await refreshSvgContent(img, screenEl);
+          URL.revokeObjectURL(blobUrl);
+          screenEl.classList.remove('empty');
+        };
+        reader.readAsText(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        let img = [...screenEl.querySelectorAll('img')].find((el) => !el.classList.contains('device-art'));
+        if (!img) {
+          img = document.createElement('img');
+          screenEl.appendChild(img);
+        }
+        img.classList.remove('is-svg');
+        delete img.dataset.isSvg;
+        delete img.dataset.svgSource;
+        delete img.dataset.logicalW;
+        delete img.dataset.logicalH;
+        img.onload = () => {
+          snapImageToTop(img, screenEl);
+        };
+        img.src = reader.result;
+        screenEl.classList.remove('empty');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function extractEmbeddedRasterFromSvg(svgText) {
+      // Match <image ... href="data:image/..."> / xlink:href (Full Page Screenshot output)
+      const patterns = [
+        /(?:xlink:)?href\s*=\s*"(data:image\/(?:png|jpeg|jpg|webp)[^"]*)"/i,
+        /(?:xlink:)?href\s*=\s*'(data:image\/(?:png|jpeg|jpg|webp)[^']*)'/i
+      ];
+      for (const re of patterns) {
+        const m = svgText.match(re);
+        if (m && m[1] && m[1].length > 100) return m[1];
+      }
+      return null;
+    }
+
+    function parseSvgDimensions(svgText) {
+      const viewBox = svgText.match(/\bviewBox\s*=\s*["']?\s*([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)/i);
+      if (viewBox) {
+        const w = Math.abs(parseFloat(viewBox[3])) || 1;
+        const h = Math.abs(parseFloat(viewBox[4])) || 1;
+        return { w, h };
+      }
+      const wMatch = svgText.match(/\bwidth\s*=\s*["']?([\d.]+)/i);
+      const hMatch = svgText.match(/\bheight\s*=\s*["']?([\d.]+)/i);
+      return {
+        w: (wMatch && parseFloat(wMatch[1])) || 1000,
+        h: (hMatch && parseFloat(hMatch[1])) || 1000
+      };
+    }
+
+    function svgSourceToDataUrl(svgText, pixelW, pixelH) {
+      let text = svgText;
+      text = text.replace(
+        /<svg\b([^>]*)>/i,
+        (match, attrs) => {
+          let next = attrs
+            .replace(/\swidth\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, '')
+            .replace(/\sheight\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, '');
+          if (!/\sviewBox\s*=/i.test(next)) {
+            const dims = parseSvgDimensions(svgText);
+            next += ` viewBox="0 0 ${dims.w} ${dims.h}"`;
+          }
+          next += ` width="${Math.max(1, Math.round(pixelW))}" height="${Math.max(1, Math.round(pixelH))}"`;
+          return `<svg${next}>`;
+        }
+      );
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(text);
+    }
+
+    async function refreshSvgContent(img, screenEl, pixelScale = null) {
+      if (!img || img.dataset.isSvg !== '1' || !img.dataset.svgSource) return img;
+      const metrics = getImageMetrics(img, screenEl);
+      if (!metrics) return img;
+
+      const dpr = pixelScale != null
+        ? pixelScale
+        : Math.max(2, window.devicePixelRatio || 1);
+      let targetW = Math.max(1, Math.ceil(metrics.w * dpr));
+      let targetH = Math.max(1, Math.ceil(metrics.h * dpr));
+
+      // Cap live preview rasters so tall full-page SVGs stay workable
+      const maxEdge = 8192;
+      const longest = Math.max(targetW, targetH);
+      if (longest > maxEdge) {
+        const s = maxEdge / longest;
+        targetW = Math.max(1, Math.ceil(targetW * s));
+        targetH = Math.max(1, Math.ceil(targetH * s));
+      }
+
+      // Keep a sharper raster if we already have one large enough
+      const curW = parseInt(img.dataset.svgRasterW || '0', 10);
+      const curH = parseInt(img.dataset.svgRasterH || '0', 10);
+      if (curW >= targetW && curH >= targetH) {
+        applyImageTransform(img, screenEl);
+        return img;
+      }
+
+      const src = svgSourceToDataUrl(img.dataset.svgSource, targetW, targetH);
+      img.dataset.svgRasterW = String(targetW);
+      img.dataset.svgRasterH = String(targetH);
+      const logicalW = parseFloat(img.dataset.logicalW || metrics.iw);
+      const logicalH = parseFloat(img.dataset.logicalH || metrics.ih);
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = src;
+      }).catch(() => {});
+      img.dataset.logicalW = String(logicalW);
+      img.dataset.logicalH = String(logicalH);
+      applyImageTransform(img, screenEl);
+      return img;
+    }
+
+    async function rasterizeSvgContentForExport(img, drawW, drawH, exportScale) {
+      if (!img || img.dataset.isSvg !== '1' || !img.dataset.svgSource) return null;
+      let pxW = Math.max(1, Math.ceil(drawW * exportScale));
+      let pxH = Math.max(1, Math.ceil(drawH * exportScale));
+      const maxEdge = 12288;
+      const longest = Math.max(pxW, pxH);
+      if (longest > maxEdge) {
+        const s = maxEdge / longest;
+        pxW = Math.max(1, Math.ceil(pxW * s));
+        pxH = Math.max(1, Math.ceil(pxH * s));
+      }
+      const src = svgSourceToDataUrl(img.dataset.svgSource, pxW, pxH);
+      const vectorImg = new Image();
+      await new Promise((resolve, reject) => {
+        vectorImg.onload = resolve;
+        vectorImg.onerror = reject;
+        vectorImg.src = src;
+      });
+      return vectorImg;
+    }
+
+    function snapImageToTop(img, screenEl) {
+      img.dataset.offsetX = '0';
+      img.dataset.scale = '1';
+      applyImageTransform(img, screenEl);
+
+      const metrics = getImageMetrics(img, screenEl);
+      if (!metrics) return;
+
+      // Align top of image to top of screen, then clamp so screen stays fully covered
+      img.dataset.offsetY = String(metrics.maxOy);
+      applyImageTransform(img, screenEl);
+    }
+
+    function getContentNaturalSize(img) {
+      if (img.dataset.isSvg === '1' && img.dataset.logicalW && img.dataset.logicalH) {
+        return {
+          iw: parseFloat(img.dataset.logicalW),
+          ih: parseFloat(img.dataset.logicalH)
+        };
+      }
+      return { iw: img.naturalWidth, ih: img.naturalHeight };
+    }
+
+    function getSharpExportScale(mockups = getSortedMockups()) {
+      // Size export so screen content isn't downscaled below the source capture pixels.
+      let needed = 2;
+      let sourceW = 0;
+      let sourceH = 0;
+      mockups.forEach((el) => {
+        const img = getContentImage(el);
+        const screenEl = el.querySelector('.screen');
+        if (!img || !screenEl) return;
+        const { iw, ih } = getContentNaturalSize(img);
+        const sw = screenEl.clientWidth || 1;
+        const sh = screenEl.clientHeight || 1;
+        if (!iw || !ih) return;
+        sourceW = Math.max(sourceW, iw);
+        sourceH = Math.max(sourceH, ih);
+        // coverScale = max(sw/iw, sh/ih); fidelity needs exportScale >= 1/coverScale
+        const coverScale = Math.max(sw / iw, sh / ih) * parseFloat(img.dataset.scale || 1);
+        if (coverScale > 0) {
+          needed = Math.max(needed, 1 / coverScale);
+        }
+      });
+
+      // Cap only by browser canvas/memory limits (Chrome typically allows up to ~16384)
+      const bounds = getExportBounds(mockups);
+      const pad = 48;
+      const layoutW = Math.ceil(bounds.right - bounds.left + pad * 2);
+      const layoutH = Math.ceil(bounds.bottom - bounds.top + pad * 2);
+      const maxEdge = 16384;
+      const maxBySize = Math.min(maxEdge / Math.max(1, layoutW), maxEdge / Math.max(1, layoutH));
+      const applied = Math.max(2, Math.min(needed, maxBySize));
+      return {
+        scale: applied,
+        needed,
+        capped: applied + 0.01 < needed,
+        sourceW,
+        sourceH,
+        layoutW,
+        layoutH,
+        outW: Math.round(layoutW * applied),
+        outH: Math.round(layoutH * applied)
+      };
+    }
+
+    function getImageMetrics(img, screenEl) {
+      const sw = screenEl.clientWidth;
+      const sh = screenEl.clientHeight;
+      const { iw, ih } = getContentNaturalSize(img);
+      if (!iw || !ih || !sw || !sh) return null;
+
+      const coverScale = Math.max(sw / iw, sh / ih);
+      const scale = coverScale * parseFloat(img.dataset.scale || 1);
+      const w = iw * scale;
+      const h = ih * scale;
+      const overflowY = Math.max(0, (h - sh) / 2);
+
+      return {
+        sw, sh, iw, ih, coverScale, scale, w, h,
+        minOy: -overflowY,
+        maxOy: overflowY
+      };
+    }
+
+    function clampImageOffset(img, screenEl) {
+      const metrics = getImageMetrics(img, screenEl);
+      if (!metrics) return;
+      img.dataset.offsetX = '0';
+      const oy = parseFloat(img.dataset.offsetY || 0);
+      img.dataset.offsetY = String(Math.min(metrics.maxOy, Math.max(metrics.minOy, oy)));
+    }
+
+    function applyImageTransform(img, screenEl) {
+      clampImageOffset(img, screenEl);
+      const metrics = getImageMetrics(img, screenEl);
+      if (!metrics) return;
+
+      const oy = parseFloat(img.dataset.offsetY || 0);
+      img.style.width = metrics.w + 'px';
+      img.style.height = metrics.h + 'px';
+      img.style.transform = `translate(calc(-50% + 0px), calc(-50% + ${oy}px))`;
+    }
+
+    function getMockupBounds(el, left = parseFloat(el.style.left) || 0, top = parseFloat(el.style.top) || 0) {
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+      return {
+        left,
+        top,
+        right: left + width,
+        bottom: top + height,
+        centerX: left + width / 2,
+        centerY: top + height / 2,
+        width,
+        height
+      };
+    }
+
+    function clearAlignmentGuides() {
+      guidesLayer.innerHTML = '';
+    }
+
+    function showAlignmentGuides(el, guides) {
+      clearAlignmentGuides();
+      if (!guides || (!guides.v.length && !guides.h.length)) return;
+
+      guides.v.forEach((x) => {
+        const line = document.createElement('div');
+        line.className = 'smart-guide v';
+        line.style.left = x + 'px';
+        guidesLayer.appendChild(line);
+      });
+
+      guides.h.forEach((y) => {
+        const line = document.createElement('div');
+        line.className = 'smart-guide h';
+        line.style.top = y + 'px';
+        guidesLayer.appendChild(line);
+      });
+    }
+
+    function snapMockupPosition(el, proposedLeft, proposedTop) {
+      const otherMockups = [...canvasInner.querySelectorAll('.mockup')].filter((m) => m !== el);
+      if (!otherMockups.length) {
+        return { left: proposedLeft, top: proposedTop, guides: { v: [], h: [] } };
+      }
+
+      const moving = getMockupBounds(el, proposedLeft, proposedTop);
+      const sources = otherMockups.map((m) => getMockupBounds(m));
+
+      const vTargets = [];
+      const hTargets = [];
+      sources.forEach((s) => {
+        vTargets.push(
+          { value: s.left, guide: s.left },
+          { value: s.centerX, guide: s.centerX },
+          { value: s.right, guide: s.right }
+        );
+        hTargets.push(
+          { value: s.top, guide: s.top },
+          { value: s.centerY, guide: s.centerY },
+          { value: s.bottom, guide: s.bottom }
+        );
+      });
+
+      const moveVEdges = [
+        { key: 'left', offset: 0 },
+        { key: 'centerX', offset: moving.width / 2 },
+        { key: 'right', offset: moving.width }
+      ];
+      const moveHEdges = [
+        { key: 'top', offset: 0 },
+        { key: 'centerY', offset: moving.height / 2 },
+        { key: 'bottom', offset: moving.height }
+      ];
+
+      let bestVX = null;
+      let bestVY = null;
+      let bestDX = SNAP_THRESHOLD + 1;
+      let bestDY = SNAP_THRESHOLD + 1;
+      const matchGuidesV = new Set();
+      const matchGuidesH = new Set();
+
+      moveVEdges.forEach((edge) => {
+        const edgePos = proposedLeft + edge.offset;
+        vTargets.forEach((target) => {
+          const dist = Math.abs(edgePos - target.value);
+          if (dist <= SNAP_THRESHOLD && dist < bestDX) {
+            bestDX = dist;
+            bestVX = target.value - edge.offset;
+            matchGuidesV.clear();
+            matchGuidesV.add(target.guide);
+          } else if (dist <= SNAP_THRESHOLD && dist === bestDX && bestVX === target.value - edge.offset) {
+            matchGuidesV.add(target.guide);
+          }
+        });
+      });
+
+      moveHEdges.forEach((edge) => {
+        const edgePos = proposedTop + edge.offset;
+        hTargets.forEach((target) => {
+          const dist = Math.abs(edgePos - target.value);
+          if (dist <= SNAP_THRESHOLD && dist < bestDY) {
+            bestDY = dist;
+            bestVY = target.value - edge.offset;
+            matchGuidesH.clear();
+            matchGuidesH.add(target.guide);
+          } else if (dist <= SNAP_THRESHOLD && dist === bestDY && bestVY === target.value - edge.offset) {
+            matchGuidesH.add(target.guide);
+          }
+        });
+      });
+
+      const left = Math.max(0, bestVX === null ? proposedLeft : bestVX);
+      const top = Math.max(0, bestVY === null ? proposedTop : bestVY);
+
+      // After snapping, collect all guides that are now aligned
+      const final = getMockupBounds(el, left, top);
+      const guidesV = new Set();
+      const guidesH = new Set();
+
+      sources.forEach((s) => {
+        [final.left, final.centerX, final.right].forEach((edge) => {
+          [s.left, s.centerX, s.right].forEach((target) => {
+            if (Math.abs(edge - target) < 0.5) guidesV.add(target);
+          });
+        });
+        [final.top, final.centerY, final.bottom].forEach((edge) => {
+          [s.top, s.centerY, s.bottom].forEach((target) => {
+            if (Math.abs(edge - target) < 0.5) guidesH.add(target);
+          });
+        });
+      });
+
+      return {
+        left,
+        top,
+        guides: {
+          v: [...guidesV],
+          h: [...guidesH]
+        }
+      };
+    }
+
+    function getSortedMockups() {
+      return [...canvasInner.querySelectorAll('.mockup')].sort((a, b) => {
+        return (parseInt(a.style.zIndex, 10) || 0) - (parseInt(b.style.zIndex, 10) || 0);
+      });
+    }
+
+    function bringToFront(el) {
+      el.style.zIndex = String(++layerCounter);
+      showToast('Brought to front');
+    }
+
+    function sendToBack(el) {
+      const others = getSortedMockups().filter((m) => m !== el);
+      if (!others.length) {
+        el.style.zIndex = '1';
+        return;
+      }
+      const minZ = Math.min(...others.map((m) => parseInt(m.style.zIndex, 10) || 0));
+      el.style.zIndex = String(minZ - 1);
+      showToast('Sent to back');
+    }
+
+    function bringForward(el) {
+      const sorted = getSortedMockups();
+      const idx = sorted.indexOf(el);
+      if (idx < 0 || idx >= sorted.length - 1) return;
+      const above = sorted[idx + 1];
+      const zA = parseInt(el.style.zIndex, 10) || 0;
+      const zB = parseInt(above.style.zIndex, 10) || 0;
+      el.style.zIndex = String(zB);
+      above.style.zIndex = String(zA);
+      showToast('Brought forward');
+    }
+
+    function sendBackward(el) {
+      const sorted = getSortedMockups();
+      const idx = sorted.indexOf(el);
+      if (idx <= 0) return;
+      const below = sorted[idx - 1];
+      const zA = parseInt(el.style.zIndex, 10) || 0;
+      const zB = parseInt(below.style.zIndex, 10) || 0;
+      el.style.zIndex = String(zB);
+      below.style.zIndex = String(zA);
+      showToast('Sent backward');
+    }
+
+    canvas.addEventListener('dragover', (e) => {
+      const file = [...(e.dataTransfer.files || [])].find(f => f.type.startsWith('image/'));
+      const hasFiles = [...e.dataTransfer.types].includes('Files');
+      if (!hasFiles && !file) return;
+
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      canvas.classList.add('drag-over');
+      clearScreenHighlights();
+      const target = findDropTargetScreen(e.clientX, e.clientY);
+      if (target) target.classList.add('drag-over');
+    });
+
+    canvas.addEventListener('dragleave', (e) => {
+      if (!canvas.contains(e.relatedTarget)) {
+        canvas.classList.remove('drag-over');
+        clearScreenHighlights();
+      }
+    });
+
+    canvas.addEventListener('drop', (e) => {
+      e.preventDefault();
+      canvas.classList.remove('drag-over');
+      clearScreenHighlights();
+
+      const file = [...(e.dataTransfer.files || [])].find(f => f.type.startsWith('image/'));
+      if (!file) return;
+
+      const target = findDropTargetScreen(e.clientX, e.clientY);
+      if (target) {
+        loadImageIntoScreen(file, target);
+        showToast('Image added to mockup');
+      } else {
+        showToast('Drop the image onto a mockup');
+      }
+    });
+
+    document.getElementById('clearCanvas').addEventListener('click', () => {
+      canvasInner.querySelectorAll('.mockup').forEach(m => m.remove());
+      updateEmptyState();
+    });
+
+    const SHOWCASE = {
+      holdStartMs: 1200,
+      holdEndMs: 1400,
+      fps: 60
+    };
+
+    const showcaseSpeedInput = document.getElementById('showcaseSpeed');
+    const showcaseSpeedLabel = document.getElementById('showcaseSpeedLabel');
+
+    function getShowcaseScrollMs() {
+      // Slider: Slow(6) ← left, Fast(30) ← right visually but we invert:
+      // left = slow/long, right = fast/short
+      const slowEnd = 6;
+      const fastEnd = 30;
+      const raw = parseFloat(showcaseSpeedInput.value) || 14;
+      // Map UI so left (6) = 30s slow, right (30) = 6s fast
+      const seconds = slowEnd + fastEnd - raw;
+      return Math.round(seconds * 1000);
+    }
+
+    function updateShowcaseSpeedLabel() {
+      const seconds = Math.round(getShowcaseScrollMs() / 1000);
+      showcaseSpeedLabel.textContent = seconds + 's';
+    }
+
+    showcaseSpeedInput.addEventListener('input', updateShowcaseSpeedLabel);
+    updateShowcaseSpeedLabel();
+
+    function easeInOutSine(t) {
+      // Gentler mid-scroll than cubic — avoids the “jittery through white” peak
+      return -(Math.cos(Math.PI * t) - 1) / 2;
+    }
+
+    function getContentImage(mockupEl) {
+      return [...mockupEl.querySelectorAll('.screen img')].find((img) => !img.classList.contains('device-art')) || null;
+    }
+
+    function getScrollRangeForMockup(mockupEl) {
+      const screenEl = mockupEl.querySelector('.screen');
+      const img = getContentImage(mockupEl);
+      if (!screenEl || !img || !img.naturalWidth) return null;
+      const metrics = getImageMetrics(img, screenEl);
+      if (!metrics || metrics.maxOy <= metrics.minOy) return null;
+      return { img, screenEl, from: metrics.maxOy, to: metrics.minOy };
+    }
+
+    function getShowcaseMockups() {
+      return getSortedMockups().filter((el) => getScrollRangeForMockup(el));
+    }
+
+    function snapScrollOffset(oy, exportScale = 1) {
+      // Snap to the final export pixel grid (stops white-edge shimmer without uneven jumps)
+      const s = Math.max(1, exportScale);
+      return Math.round(oy * s) / s;
+    }
+
+    function setShowcaseProgress(progress) {
+      // progress 0 = top / start hold, 1 = bottom / end hold
+      getShowcaseMockups().forEach((el) => {
+        const range = getScrollRangeForMockup(el);
+        if (!range) return;
+        const oy = snapScrollOffset(range.from + (range.to - range.from) * progress, 1);
+        range.img.dataset.offsetY = String(oy);
+        applyImageTransform(range.img, range.screenEl);
+      });
+    }
+
+    function showcaseTimeline(tNorm) {
+      // Returns scroll progress 0→1 with hold at start/end
+      const scrollMs = getShowcaseScrollMs();
+      const total = SHOWCASE.holdStartMs + scrollMs + SHOWCASE.holdEndMs;
+      const t = tNorm * total;
+      if (t <= SHOWCASE.holdStartMs) return 0;
+      if (t >= SHOWCASE.holdStartMs + scrollMs) return 1;
+      const p = (t - SHOWCASE.holdStartMs) / scrollMs;
+      return easeInOutSine(p);
+    }
+
+    let showcasePlaying = false;
+    let showcaseRaf = 0;
+
+    async function playShowcasePreview() {
+      const targets = getShowcaseMockups();
+      if (!targets.length) {
+        showToast('Add an image to a mockup first');
+        return;
+      }
+      if (showcasePlaying) {
+        cancelAnimationFrame(showcaseRaf);
+        showcasePlaying = false;
+        document.getElementById('playShowcase').textContent = 'Play Showcase';
+        return;
+      }
+
+      showcasePlaying = true;
+      document.getElementById('playShowcase').textContent = 'Stop Showcase';
+      const scrollMs = getShowcaseScrollMs();
+      showToast(`Playing showcase (${Math.round(scrollMs / 1000)}s scroll)…`);
+      const total = SHOWCASE.holdStartMs + scrollMs + SHOWCASE.holdEndMs;
+      const start = performance.now();
+
+      await new Promise((resolve) => {
+        function tick(now) {
+          if (!showcasePlaying) {
+            resolve();
+            return;
+          }
+          const elapsed = now - start;
+          const tNorm = Math.min(1, elapsed / total);
+          setShowcaseProgress(showcaseTimeline(tNorm));
+          if (tNorm < 1) {
+            showcaseRaf = requestAnimationFrame(tick);
+          } else {
+            showcasePlaying = false;
+            document.getElementById('playShowcase').textContent = 'Play Showcase';
+            resolve();
+          }
+        }
+        showcaseRaf = requestAnimationFrame(tick);
+      });
+    }
+
+    document.getElementById('playShowcase').addEventListener('click', () => {
+      playShowcasePreview();
+    });
+
+    const exportMenu = document.getElementById('exportMenu');
+    const exportToggle = document.getElementById('exportToggle');
+    const exportDropdown = document.getElementById('exportDropdown');
+
+    function closeExportMenu() {
+      exportMenu.classList.remove('open');
+      exportToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    exportToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = exportMenu.classList.toggle('open');
+      exportToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    exportDropdown.addEventListener('click', async (e) => {
+      if (e.target.closest('.toggle-field') || e.target.closest('#exportShadows')) {
+        e.stopPropagation();
+        return;
+      }
+      const btn = e.target.closest('[data-export]');
+      if (!btn) return;
+      closeExportMenu();
+      await exportStudio(btn.dataset.export);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!exportMenu.contains(e.target)) closeExportMenu();
+    });
+
+    function getExportBounds(mockups) {
+      const shadowsOn = document.getElementById('exportShadows')?.checked;
+      const shadowPad = shadowsOn ? 14 : 0;
+      return mockups.reduce((acc, el) => {
+        const left = parseFloat(el.style.left) || 0;
+        const top = parseFloat(el.style.top) || 0;
+        const stage = el.querySelector('.device-stage');
+        const toolbar = el.querySelector('.mockup-toolbar');
+        const toolbarH = toolbar ? toolbar.offsetHeight + 8 : 0;
+        const stageLeft = left + (stage ? stage.offsetLeft : 0);
+        const stageTop = top + toolbarH;
+        const w = stage ? stage.offsetWidth : el.offsetWidth;
+        const h = stage ? stage.offsetHeight : el.offsetHeight;
+        return {
+          left: Math.min(acc.left, stageLeft - shadowPad),
+          top: Math.min(acc.top, stageTop - shadowPad * 0.35),
+          right: Math.max(acc.right, stageLeft + w + shadowPad),
+          bottom: Math.max(acc.bottom, stageTop + h + shadowPad)
+        };
+      }, { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
+    }
+
+    function loadImageFromSrc(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    async function renderMockupToCanvas(el, exportScale = 2, offsetOverride = null, artCache = null) {
+      const deviceScale = parseFloat(el.dataset.scale || 1);
+      const rotation = parseFloat(el.dataset.rotation || 0);
+      const baseW = parseFloat(el.dataset.baseFrameW);
+      const baseH = parseFloat(el.dataset.baseFrameH);
+      const frameW = baseW * deviceScale;
+      const frameH = baseH * deviceScale;
+      const baseScreen = JSON.parse(el.dataset.baseScreen || '{}');
+      const screen = {
+        left: (baseScreen.left || 0) * deviceScale,
+        top: (baseScreen.top || 0) * deviceScale,
+        width: (baseScreen.width || frameW) * deviceScale,
+        height: (baseScreen.height || frameH) * deviceScale,
+        radius: (baseScreen.radius || 0) * deviceScale
+      };
+
+      // Unrotated frame bitmap — integer pixels, art drawn 1:1 into it for sharp SVG chrome
+      const frameCanvas = document.createElement('canvas');
+      const framePxW = Math.max(1, Math.ceil(frameW * exportScale));
+      const framePxH = Math.max(1, Math.ceil(frameH * exportScale));
+      frameCanvas.width = framePxW;
+      frameCanvas.height = framePxH;
+      const fctx = frameCanvas.getContext('2d');
+      fctx.imageSmoothingEnabled = true;
+      fctx.imageSmoothingQuality = 'high';
+
+      // Device art (greyscale) — cache at this exportScale so vectors stay crisp
+      const artCacheKey = el;
+      let artImg = artCache && artCache.get(artCacheKey);
+      if (!artImg) {
+        const liveArt = el.querySelector('.device-art');
+        if (liveArt) {
+          try {
+            const artPng = await rasterizeDeviceArt(liveArt, frameW, frameH, el.dataset.type, exportScale);
+            artImg = await loadImageFromSrc(artPng);
+            if (artCache) artCache.set(artCacheKey, artImg);
+          } catch (err) {
+            console.warn('Device art export failed', err);
+          }
+        }
+      }
+      if (artImg) {
+        // 1:1 blit into export pixels — no soft resample of the device SVG
+        fctx.imageSmoothingEnabled = false;
+        fctx.drawImage(artImg, 0, 0, framePxW, framePxH);
+        fctx.imageSmoothingEnabled = true;
+        fctx.imageSmoothingQuality = 'high';
+      }
+
+      // Scale remaining draws (screen content) into CSS/layout units
+      fctx.scale(exportScale, exportScale);
+
+      // Screen content clipped into rounded rect
+      const contentImg = [...el.querySelectorAll('.screen img')].find((img) => !img.classList.contains('device-art'));
+      if (contentImg && (contentImg.naturalWidth || contentImg.dataset.isSvg === '1')) {
+        fctx.save();
+        fctx.beginPath();
+        const r = screen.radius || 0;
+        const x = screen.left;
+        const y = screen.top;
+        const w = screen.width;
+        const h = screen.height;
+        if (typeof fctx.roundRect === 'function') {
+          fctx.roundRect(x, y, w, h, r);
+        } else {
+          fctx.moveTo(x + r, y);
+          fctx.arcTo(x + w, y, x + w, y + h, r);
+          fctx.arcTo(x + w, y + h, x, y + h, r);
+          fctx.arcTo(x, y + h, x, y, r);
+          fctx.arcTo(x, y, x + w, y, r);
+          fctx.closePath();
+        }
+        fctx.clip();
+
+        const { iw, ih } = getContentNaturalSize(contentImg);
+        const coverScale = Math.max(w / iw, h / ih) * parseFloat(contentImg.dataset.scale || 1);
+        const drawW = iw * coverScale;
+        const drawH = ih * coverScale;
+        const oy = offsetOverride != null
+          ? offsetOverride
+          : parseFloat(contentImg.dataset.offsetY || 0);
+        const dx = x + w / 2 - drawW / 2;
+        const dy = y + h / 2 - drawH / 2 + oy;
+
+        // For SVGs: re-rasterize at true export pixels so zoomed screenshots stay vector-sharp
+        let drawSrc = contentImg;
+        if (contentImg.dataset.isSvg === '1') {
+          try {
+            const pxW = Math.max(1, Math.ceil(drawW * exportScale));
+            const pxH = Math.max(1, Math.ceil(drawH * exportScale));
+            const cacheKey = 'svgContent';
+            let cached = artCache && artCache.get(cacheKey + ':' + el.dataset.id);
+            if (!cached || cached.pxW !== pxW || cached.pxH !== pxH) {
+              const crisp = await rasterizeSvgContentForExport(contentImg, drawW, drawH, exportScale);
+              if (crisp) {
+                cached = { img: crisp, pxW, pxH };
+                if (artCache) artCache.set(cacheKey + ':' + el.dataset.id, cached);
+                drawSrc = crisp;
+              }
+            } else {
+              drawSrc = cached.img;
+            }
+          } catch (err) {
+            console.warn('SVG content export rasterize failed', err);
+          }
+        }
+        fctx.imageSmoothingEnabled = contentImg.dataset.isSvg !== '1';
+        fctx.imageSmoothingQuality = 'high';
+        fctx.drawImage(drawSrc, dx, dy, drawW, drawH);
+        fctx.restore();
+      }
+
+      // Apply rotation into a stage-sized canvas matching the live device-stage
+      const rad = rotation * Math.PI / 180;
+      const absCos = Math.abs(Math.cos(rad));
+      const absSin = Math.abs(Math.sin(rad));
+      const stageW = frameW * absCos + frameH * absSin;
+      const stageH = frameW * absSin + frameH * absCos;
+
+      // Skip an extra blit when unrotated — that resample softens SVG edges
+      if (Math.abs(rotation % 360) < 0.001) {
+        return {
+          canvas: frameCanvas,
+          stageW: frameW,
+          stageH: frameH,
+          frameW,
+          frameH
+        };
+      }
+
+      const stageCanvas = document.createElement('canvas');
+      stageCanvas.width = Math.max(1, Math.ceil(stageW * exportScale));
+      stageCanvas.height = Math.max(1, Math.ceil(stageH * exportScale));
+      const sctx = stageCanvas.getContext('2d');
+      sctx.imageSmoothingEnabled = true;
+      sctx.imageSmoothingQuality = 'high';
+      sctx.translate(stageCanvas.width / 2, stageCanvas.height / 2);
+      sctx.rotate(rad);
+      sctx.drawImage(
+        frameCanvas,
+        -frameCanvas.width / 2,
+        -frameCanvas.height / 2
+      );
+
+      return {
+        canvas: stageCanvas,
+        stageW,
+        stageH,
+        frameW,
+        frameH
+      };
+    }
+
+    async function renderStudioCanvas(format, options = {}) {
+      const mockups = getSortedMockups();
+      if (!mockups.length) return null;
+
+      const shadowsOn = !!document.getElementById('exportShadows')?.checked;
+      const bounds = getExportBounds(mockups);
+      const pad = 48;
+      const width = Math.ceil(bounds.right - bounds.left + pad * 2);
+      const height = Math.ceil(bounds.bottom - bounds.top + pad * 2);
+      const exportScale = options.exportScale != null ? options.exportScale : 2;
+      const progress = options.progress;
+      const offsets = options.offsets || null;
+      const artCache = options.artCache || null;
+
+      const out = document.createElement('canvas');
+      out.width = Math.max(1, width * exportScale);
+      out.height = Math.max(1, height * exportScale);
+      const ctx = out.getContext('2d');
+
+      if (format === 'jpeg' || format === 'gif' || format === 'mp4' || format === 'webm') {
+        ctx.fillStyle = '#12151c';
+        ctx.fillRect(0, 0, out.width, out.height);
+      }
+
+      for (const el of mockups) {
+        const left = parseFloat(el.style.left) || 0;
+        const top = parseFloat(el.style.top) || 0;
+        const stage = el.querySelector('.device-stage');
+        const toolbar = el.querySelector('.mockup-toolbar');
+        const toolbarH = toolbar ? toolbar.offsetHeight + 8 : 0;
+        const stageLeft = left + (stage ? stage.offsetLeft : 0);
+        const stageTop = top + toolbarH;
+
+        let offsetOverride = null;
+        if (offsets && offsets.has(el)) {
+          offsetOverride = offsets.get(el);
+        } else if (progress != null) {
+          const range = getScrollRangeForMockup(el);
+          if (range) offsetOverride = snapScrollOffset(
+            range.from + (range.to - range.from) * progress,
+            exportScale
+          );
+        }
+
+        const rendered = await renderMockupToCanvas(el, exportScale, offsetOverride, artCache);
+        const x = Math.round((stageLeft - bounds.left + pad) * exportScale);
+        const y = Math.round((stageTop - bounds.top + pad) * exportScale);
+
+        ctx.save();
+        if (shadowsOn) {
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.225)';
+          ctx.shadowBlur = 18 * exportScale;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 9 * exportScale;
+        }
+        // 1:1 composite keeps device chrome sharp
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(rendered.canvas, x, y);
+        ctx.restore();
+      }
+
+      return { canvas: out, width, height, exportScale };
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function canvasToBlob(canvas, type, quality) {
+      return new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+    }
+
+    async function exportRaster(format) {
+      const mockups = getSortedMockups();
+      if (!mockups.length) {
+        showToast('Add at least one mockup first');
+        return;
+      }
+
+      showToast('Preparing ' + format.toUpperCase() + '…');
+      try {
+        const sharpness = getSharpExportScale(mockups);
+        const result = await renderStudioCanvas(format, { exportScale: sharpness.scale });
+        if (!result) return;
+        const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+        const blob = await canvasToBlob(result.canvas, mime, format === 'jpeg' ? 0.92 : undefined);
+        if (!blob) throw new Error('Could not create file');
+        downloadBlob(blob, `device-mockup-${Date.now()}.${format === 'jpeg' ? 'jpg' : 'png'}`);
+        const mb = (blob.size / (1024 * 1024)).toFixed(1);
+        showToast(
+          `${format.toUpperCase()} ${mb} MB · ${result.canvas.width}×${result.canvas.height}` +
+          (sharpness.capped ? ' (memory capped)' : ' (full source)')
+        );
+      } catch (err) {
+        showToast('Export failed — try again');
+        console.error(err);
+      }
+    }
+
+    async function exportSvg() {
+      const mockups = getSortedMockups();
+      if (!mockups.length) {
+        showToast('Add at least one mockup first');
+        return;
+      }
+
+      showToast('Preparing high-res SVG…');
+      try {
+        const sharpness = getSharpExportScale(mockups);
+        const result = await renderStudioCanvas('png', { exportScale: sharpness.scale });
+        if (!result) return;
+
+        // Embed at full rendered pixel size so the PNG inside matches source capture detail.
+        const svgW = result.canvas.width;
+        const svgH = result.canvas.height;
+        const pngData = result.canvas.toDataURL('image/png');
+        const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
+  <image width="${svgW}" height="${svgH}" preserveAspectRatio="xMidYMid meet" xlink:href="${pngData}" href="${pngData}"/>
+</svg>`;
+
+        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        downloadBlob(blob, `device-mockup-${Date.now()}.svg`);
+        const mb = (blob.size / (1024 * 1024)).toFixed(1);
+        const scaleLabel = Math.round(sharpness.scale * 10) / 10;
+        showToast(
+          `SVG ${mb} MB · ${svgW}×${svgH} · ${scaleLabel}×` +
+          (sharpness.capped ? ' (memory capped)' : ' (full source)')
+        );
+      } catch (err) {
+        showToast('Export failed — try again');
+        console.error(err);
+      }
+    }
+
+    async function exportStudio(format) {
+      if (format === 'svg') await exportSvg();
+      else if (format === 'gif') await exportGif();
+      else if (format === 'mp4') await exportMp4();
+      else await exportRaster(format);
+    }
+
+    async function renderShowcaseFrame(options = {}) {
+      const {
+        progress,
+        exportScale = 2,
+        artCache = null,
+        evenSize = null
+      } = options;
+
+      let lastErr = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const result = await renderStudioCanvas('gif', { progress, exportScale, artCache });
+          if (!result || !result.canvas) throw new Error('Empty render result');
+
+          const src = result.canvas;
+          const evenW = evenSize ? evenSize.w : (src.width - (src.width % 2));
+          const evenH = evenSize ? evenSize.h : (src.height - (src.height % 2));
+          if (evenW < 2 || evenH < 2) throw new Error('Invalid frame dimensions');
+
+          const frame = document.createElement('canvas');
+          frame.width = evenW;
+          frame.height = evenH;
+          const fctx = frame.getContext('2d', { alpha: false });
+          fctx.imageSmoothingEnabled = false;
+          fctx.fillStyle = '#12151c';
+          fctx.fillRect(0, 0, evenW, evenH);
+          fctx.drawImage(src, 0, 0, evenW, evenH);
+          return { canvas: frame, width: evenW, height: evenH };
+        } catch (err) {
+          lastErr = err;
+          await new Promise((r) => setTimeout(r, 30 + attempt * 40));
+        }
+      }
+      throw lastErr || new Error('Frame render failed');
+    }
+
+    async function collectShowcaseFrames(options = {}) {
+      const targets = getShowcaseMockups();
+      if (!targets.length) {
+        showToast('Add an image to a mockup first');
+        return null;
+      }
+
+      const totalMs = SHOWCASE.holdStartMs + getShowcaseScrollMs() + SHOWCASE.holdEndMs;
+      const fps = options.fps || SHOWCASE.fps;
+      // Exact frame count — never stop mid-sequence
+      const frameCount = Math.max(2, Math.round((totalMs / 1000) * fps));
+      const delayMs = totalMs / frameCount;
+      const exportScale = options.exportScale != null ? options.exportScale : 2;
+      const frames = [];
+      const artCache = new Map();
+      let evenSize = null;
+
+      const saved = new Map();
+      targets.forEach((el) => {
+        const img = getContentImage(el);
+        if (img) saved.set(el, img.dataset.offsetY || '0');
+      });
+
+      try {
+        for (let i = 0; i < frameCount; i++) {
+          const tNorm = i / (frameCount - 1);
+          const progress = showcaseTimeline(tNorm);
+          if (i === 0 || i === frameCount - 1 || i % 10 === 0) {
+            const pct = Math.round(((i + 1) / frameCount) * 100);
+            showToast(`Rendering frame ${i + 1}/${frameCount} (${pct}%)`);
+          }
+
+          const rendered = await renderShowcaseFrame({
+            progress,
+            exportScale,
+            artCache,
+            evenSize
+          });
+          if (!evenSize) evenSize = { w: rendered.width, h: rendered.height };
+          frames.push(rendered.canvas);
+
+          if (i % 5 === 4) await new Promise((r) => setTimeout(r, 0));
+        }
+      } catch (err) {
+        saved.forEach((oy, el) => {
+          const range = getScrollRangeForMockup(el);
+          if (!range) return;
+          range.img.dataset.offsetY = oy;
+          applyImageTransform(range.img, range.screenEl);
+        });
+        throw err;
+      }
+
+      if (frames.length !== frameCount) {
+        throw new Error(`Only rendered ${frames.length}/${frameCount} frames`);
+      }
+
+      saved.forEach((oy, el) => {
+        const range = getScrollRangeForMockup(el);
+        if (!range) return;
+        range.img.dataset.offsetY = oy;
+        applyImageTransform(range.img, range.screenEl);
+      });
+
+      return {
+        frames,
+        delayMs,
+        fps,
+        totalMs,
+        frameCount,
+        width: frames[0].width,
+        height: frames[0].height
+      };
+    }
+
+    function waitUntil(targetTime) {
+      return new Promise((resolve) => {
+        function tick(now) {
+          if (now >= targetTime) resolve(now);
+          else requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function sleepMs(ms) {
+      return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
+    }
+
+    let gifWorkerUrlPromise = null;
+
+    async function getGifWorkerScriptUrl() {
+      if (gifWorkerUrlPromise) return gifWorkerUrlPromise;
+      gifWorkerUrlPromise = (async () => {
+        // 1) Local relative path usually works for Workers under file://
+        try {
+          const probe = await fetch('gif.worker.js', { method: 'GET', cache: 'force-cache' });
+          if (probe.ok) return 'gif.worker.js';
+        } catch (_) {
+          // fall through — still try direct path below
+        }
+
+        // 2) Blob URL from local/CDN text (avoids cross-origin Worker restrictions)
+        const candidates = [
+          'gif.worker.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+        ];
+        let lastErr = null;
+        for (const url of candidates) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const text = await res.text();
+            if (!text || text.length < 100) throw new Error('Worker script empty');
+            const blob = new Blob([text], { type: 'application/javascript' });
+            return URL.createObjectURL(blob);
+          } catch (err) {
+            lastErr = err;
+          }
+        }
+
+        // 3) Last resort: hope relative Worker path resolves next to this HTML
+        if (lastErr) console.warn('GIF worker blob load failed, using relative path', lastErr);
+        return 'gif.worker.js';
+      })();
+      return gifWorkerUrlPromise;
+    }
+
+    async function encodeGifWithOptions(pack, options) {
+      const workerScript = options.workerScript || await getGifWorkerScriptUrl();
+      const gif = new GIF({
+        workers: options.workers || 2,
+        quality: options.quality || 4,
+        workerScript,
+        width: pack.width,
+        height: pack.height,
+        dither: options.dither === undefined ? false : options.dither,
+        background: '#12151c'
+      });
+
+      // Exact cumulative delays so 60fps stays on timeline (≈16.67ms/frame)
+      let allocated = 0;
+      pack.frames.forEach((frame, i) => {
+        const target = Math.round(pack.delayMs * (i + 1));
+        const delay = Math.max(10, target - allocated);
+        allocated += delay;
+        gif.addFrame(frame, { delay, copy: true });
+      });
+
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const fail = (err) => {
+          if (settled) return;
+          settled = true;
+          try { gif.abort(); } catch (_) {}
+          reject(err instanceof Error ? err : new Error(String(err || 'GIF encode failed')));
+        };
+
+        gif.on('finished', (blob) => {
+          if (settled) return;
+          settled = true;
+          if (!blob || !blob.size) {
+            fail(new Error('Empty GIF output'));
+            return;
+          }
+          resolve(blob);
+        });
+        gif.on('progress', (p) => {
+          showToast(`Encoding GIF (${Math.round(p * 100)}%)`);
+        });
+
+        try {
+          gif.render();
+        } catch (err) {
+          fail(err);
+        }
+
+        // 60fps showcase can be 1000+ frames — allow long encodes
+        const timeoutMs = Math.max(300000, (pack.frames.length || 0) * 500);
+        setTimeout(() => fail(new Error('GIF encoding timed out')), timeoutMs);
+      });
+    }
+
+    async function exportGif() {
+      if (typeof GIF !== 'function') {
+        showToast('GIF library missing — keep gif.js next to this HTML');
+        return;
+      }
+
+      showToast('Preparing 60fps GIF…');
+      try {
+        const pack = await collectShowcaseFrames({ fps: SHOWCASE.fps, exportScale: 1.5 });
+        if (!pack || !pack.frames.length) return;
+
+        if (pack.frames.length !== pack.frameCount) {
+          throw new Error(`Incomplete GIF frames (${pack.frames.length}/${pack.frameCount})`);
+        }
+        if (!pack.width || !pack.height) {
+          throw new Error('Invalid frame size');
+        }
+
+        let blob = null;
+        try {
+          blob = await encodeGifWithOptions(pack, {
+            workers: 2,
+            quality: 4,
+            dither: false,
+            workerScript: 'gif.worker.js'
+          });
+        } catch (firstErr) {
+          console.warn('GIF encode attempt 1 failed, retrying with blob worker…', firstErr);
+          showToast('Retrying GIF encode…');
+          gifWorkerUrlPromise = null;
+          blob = await encodeGifWithOptions(pack, {
+            workers: 1,
+            quality: 10,
+            dither: false
+          });
+        }
+
+        downloadBlob(blob, `device-showcase-${Date.now()}.gif`);
+        showToast('GIF downloaded (60fps)');
+      } catch (err) {
+        console.error(err);
+        const msg = (err && err.message) ? err.message : 'unknown error';
+        showToast('GIF export failed: ' + msg);
+      }
+    }
+
+    async function exportMp4() {
+      if (typeof MediaRecorder === 'undefined') {
+        showToast('Video export not supported in this browser');
+        return;
+      }
+
+      const targets = getShowcaseMockups();
+      if (!targets.length) {
+        showToast('Add an image to a mockup first');
+        return;
+      }
+
+      showToast('Preparing 60fps video…');
+
+      const totalMs = SHOWCASE.holdStartMs + getShowcaseScrollMs() + SHOWCASE.holdEndMs;
+      const fps = SHOWCASE.fps;
+      const frameCount = Math.max(2, Math.round((totalMs / 1000) * fps));
+      const delayMs = totalMs / frameCount;
+      const exportScale = 3;
+      const artCache = new Map();
+      let evenSize = null;
+      const frameBlobs = [];
+
+      const saved = new Map();
+      targets.forEach((el) => {
+        const img = getContentImage(el);
+        if (img) saved.set(el, img.dataset.offsetY || '0');
+      });
+
+      const restoreOffsets = () => {
+        saved.forEach((oy, el) => {
+          const range = getScrollRangeForMockup(el);
+          if (!range) return;
+          range.img.dataset.offsetY = oy;
+          applyImageTransform(range.img, range.screenEl);
+        });
+      };
+
+      try {
+        // Phase 1: render every frame to a compressed JPEG blob (never abort mid-sequence)
+        for (let i = 0; i < frameCount; i++) {
+          const tNorm = i / (frameCount - 1);
+          const rendered = await renderShowcaseFrame({
+            progress: showcaseTimeline(tNorm),
+            exportScale,
+            artCache,
+            evenSize
+          });
+          if (!evenSize) evenSize = { w: rendered.width, h: rendered.height };
+
+          const blob = await canvasToBlob(rendered.canvas, 'image/png');
+          if (!blob) throw new Error(`Frame ${i + 1} encode failed`);
+          frameBlobs.push(blob);
+
+          if (i === 0 || i === frameCount - 1 || i % 10 === 0) {
+            const pct = Math.round(((i + 1) / frameCount) * 100);
+            showToast(`Rendering frame ${i + 1}/${frameCount} (${pct}%)`);
+          }
+          if (i % 5 === 4) await new Promise((r) => setTimeout(r, 0));
+        }
+
+        if (frameBlobs.length !== frameCount) {
+          throw new Error(`Only rendered ${frameBlobs.length}/${frameCount} frames`);
+        }
+
+        restoreOffsets();
+        showToast(`Encoding video 0/${frameCount} (0%)`);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = evenSize.w;
+        canvas.height = evenSize.h;
+        const ctx = canvas.getContext('2d', { alpha: false });
+        // Disable smoothing so 1:1 PNG frame playback stays pixel-sharp
+        ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = '#12151c';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const stream = canvas.captureStream(0);
+        const track = stream.getVideoTracks()[0];
+        const mimeCandidates = [
+          'video/mp4;codecs=avc1.42E01E',
+          'video/mp4;codecs=h264',
+          'video/mp4',
+          'video/webm;codecs=vp9',
+          'video/webm;codecs=vp8',
+          'video/webm'
+        ];
+        const mimeType = mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) || '';
+        if (!mimeType) {
+          showToast('No supported video encoder found');
+          return;
+        }
+
+        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        const recorder = new MediaRecorder(stream, {
+          mimeType,
+          videoBitsPerSecond: 40000000
+        });
+
+        const chunks = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size) chunks.push(e.data);
+        };
+
+        const done = new Promise((resolve, reject) => {
+          recorder.onstop = () => resolve();
+          recorder.onerror = (e) => reject(e.error || e);
+        });
+
+        recorder.start(250);
+
+        // Prefetch bitmaps so decode never stalls mid-stream (stalls caused mid-video jitter)
+        const prefetch = Math.min(6, frameCount);
+        const bitmaps = new Array(frameCount);
+        for (let i = 0; i < prefetch; i++) {
+          bitmaps[i] = await createImageBitmap(frameBlobs[i]);
+          frameBlobs[i] = null;
+        }
+
+        // Fixed per-frame cadence — never catch-up/burst frames into MediaRecorder
+        for (let i = 0; i < frameCount; i++) {
+          const tickStart = performance.now();
+
+          if (!bitmaps[i]) {
+            bitmaps[i] = await createImageBitmap(frameBlobs[i]);
+            frameBlobs[i] = null;
+          }
+          const bitmap = bitmaps[i];
+          bitmaps[i] = null;
+
+          // Warm the next few frames while we wait
+          const warm = i + prefetch;
+          if (warm < frameCount && !bitmaps[warm] && frameBlobs[warm]) {
+            createImageBitmap(frameBlobs[warm]).then((bm) => {
+              bitmaps[warm] = bm;
+              frameBlobs[warm] = null;
+            }).catch(() => {});
+          }
+
+          ctx.drawImage(bitmap, 0, 0);
+          bitmap.close();
+
+          if (track && typeof track.requestFrame === 'function') {
+            track.requestFrame();
+          }
+
+          if (i === 0 || i === frameCount - 1 || i % 15 === 0) {
+            const pct = Math.round(((i + 1) / frameCount) * 100);
+            showToast(`Encoding ${ext.toUpperCase()} ${i + 1}/${frameCount} (${pct}%)`);
+          }
+
+          const spent = performance.now() - tickStart;
+          await sleepMs(delayMs - spent);
+        }
+
+        // Hold last frame so the encoder flushes a complete clip
+        await sleepMs(Math.max(120, delayMs * 2));
+
+        recorder.stop();
+        stream.getTracks().forEach((t) => t.stop());
+        await done;
+
+        const blob = new Blob(chunks, { type: mimeType });
+        if (!blob.size) throw new Error('Empty video output');
+        downloadBlob(blob, `device-showcase-${Date.now()}.${ext}`);
+        if (ext === 'webm') {
+          showToast('WebM downloaded (60fps — MP4 not supported here)');
+        } else {
+          showToast('MP4 downloaded (60fps)');
+        }
+      } catch (err) {
+        restoreOffsets();
+        console.error(err);
+        const msg = (err && err.message) ? err.message : 'unknown error';
+        showToast('Video export failed: ' + msg);
+      }
+    }
+
+    createPalette();
+    updateEmptyState();
+
+    // Prefetch device SVGs so display + exports work reliably
+    Object.values(DEVICES).forEach((device) => {
+      if (device.svgFile) {
+        getSvgDataUrl(device.svgFile).catch(() => {});
+      }
+    });
+
+    // Warm GIF worker (Blob URL) so local file:// pages can encode without worker CORS issues
+    getGifWorkerScriptUrl().catch(() => {});
+  </script>
+</body>
+</html>
