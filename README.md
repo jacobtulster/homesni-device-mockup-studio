@@ -1,6 +1,8 @@
 # HomesNI Device Mockup Studio
 
-A local browser tool for composing Apple-device mockups and exporting stills or showcase scroll animations.
+A browser tool for composing Apple-device mockups and exporting stills or showcase scroll animations.
+
+**Use it live:** [jacobtulster.github.io/homesni-device-mockup-studio](https://jacobtulster.github.io/homesni-device-mockup-studio/)
 
 ## What’s included
 
@@ -9,19 +11,16 @@ A local browser tool for composing Apple-device mockups and exporting stills or 
 | `index.html` | The full studio app (open this) |
 | `IMac_vector.svg` | iMac device art |
 | `IPhone_17_Vector.svg` | iPhone device art |
-| `gif.js` / `gif.worker.js` | Local GIF encoder (works under `file://`) |
+| `gif.js` / `gif.worker.js` | Local GIF encoder |
 
 MacBook Pro and iPad use built-in SVG art inside `index.html`.
 
 ## How to use
 
-1. Keep every file in this folder together.
-2. Open `index.html` in Chrome / Edge (double-click is fine).
-3. Click a device in the sidebar to place it.
-4. Drop a screenshot onto a device screen.
-5. Use **Export** for PNG, JPEG, SVG, GIF, or video.
-
-> Tip: GIF export needs `gif.js` and `gif.worker.js` next to `index.html`.
+1. Open the live site above, **or** open `index.html` locally (keep every file in this folder together).
+2. Click a device in the sidebar to place it.
+3. Drop a screenshot onto a device screen.
+4. Use **Export** for PNG, JPEG, SVG, GIF, or video.
 
 ## Features
 
